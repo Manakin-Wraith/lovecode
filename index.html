@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LoveCode - Software That Fits You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      :root, [data-theme="retro-brutalist"] {
+        --color-dark: #0D0D0D;
+        --color-light: #F0F0F0;
+        --color-primary: #39FF14;
+        --color-secondary: #FF00FF;
+        --font-heading: "Press Start 2P", cursive;
+        --font-body: "VT323", monospace;
+        --color-overlay: rgba(255, 255, 255, 0.03);
+        --color-primary-rgb: 57, 255, 20;
+      }
+      [data-theme="cyberpunk-glitch"] {
+        --color-dark: #0A041A;
+        --color-light: #E0E0FF;
+        --color-primary: #00FFFF;
+        --color-secondary: #F000B8;
+        --font-heading: "Share Tech Mono", monospace;
+        --font-body: "VT323", monospace;
+        --color-overlay: rgba(0, 255, 255, 0.05);
+        --color-primary-rgb: 0, 255, 255;
+      }
+      [data-theme="solarized-dawn"] {
+        --color-dark: #fdf6e3;
+        --color-light: #073642;
+        --color-primary: #268bd2;
+        --color-secondary: #d33682;
+        --font-heading: "Inter", sans-serif;
+        --font-body: "Roboto Mono", monospace;
+        --color-overlay: rgba(0, 0, 0, 0.02);
+        --color-primary-rgb: 38, 139, 210;
+      }
+      [data-theme="terminal-matrix"] {
+        --color-dark: #000000;
+        --color-light: #00FF00;
+        --color-primary: #00FF00;
+        --color-secondary: #00B300;
+        --font-heading: "Press Start 2P", cursive;
+        --font-body: "VT323", monospace;
+        --color-overlay: transparent;
+        --color-primary-rgb: 0, 255, 0;
+      }
+
+      /* Base styles */
+      body {
+        background-color: var(--color-dark);
+        transition: background-color 0.5s ease;
+      }
+      .brutal-card-shadow, .brutal-button-shadow, .brutal-image-shadow {
+        transition: all 0.3s ease;
+      }
+      #matrix-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        display: none;
+        background-color: #000;
+      }
+      .scanline-overlay {
+        background-image: linear-gradient(var(--color-overlay) 1px, transparent 1px);
+        background-size: 100% 3px;
+      }
+
+      /* Animations */
+      @keyframes flicker {
+        0%, 100% { opacity: 1; }
+        50.1% { opacity: 0.96; }
+      }
+      @keyframes glitch {
+        2%,64% { transform: translate(2px,0) skew(0deg); }
+        4%,60% { transform: translate(-2px,0) skew(0deg); }
+        62% { transform: translate(0,0) skew(5deg); }
+      }
+      @keyframes glitch-secondary {
+        2%,64% { transform: translate(1px, -1px); opacity: 0.8; }
+        4%,60% { transform: translate(-1px, 1px); opacity: 1; }
+        62% { transform: translate(1px, 2px) skew(-3deg); opacity: 0.7; }
+      }
+      @keyframes pulse-glow {
+        0% {
+          box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 15px rgba(var(--color-primary-rgb), 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0);
+        }
+      }
+      
+      /* THEME: RETRO-BRUTALIST (Enhanced) */
+      [data-theme="retro-brutalist"] .app-container {
+        animation: flicker 3s infinite linear;
+      }
+
+      /* THEME: CYBERPUNK-GLITCH */
+      [data-theme="cyberpunk-glitch"] .brutal-card-shadow,
+      [data-theme="cyberpunk-glitch"] .brutal-button-shadow,
+      [data-theme="cyberpunk-glitch"] .brutal-image-shadow {
+        display: none;
+      }
+      [data-theme="cyberpunk-glitch"] .brutal-card .relative,
+      [data-theme="cyberpunk-glitch"] .brutal-button,
+      [data-theme="cyberpunk-glitch"] .contact-form-wrapper,
+      [data-theme="cyberpunk-glitch"] .team-image-wrapper,
+      [data-theme="cyberpunk-glitch"] .theme-toggle-fab,
+      [data-theme="cyberpunk-glitch"] .theme-toggle-menu {
+        border-width: 1px;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 4px var(--color-primary), inset 0 0 4px var(--color-primary);
+        transition: box-shadow 0.3s ease;
+      }
+      [data-theme="cyberpunk-glitch"] .brutal-card:hover .relative,
+      [data-theme="cyberpunk-glitch"] .brutal-button:hover,
+      [data-theme="cyberpunk-glitch"] .team-image-wrapper:hover {
+        box-shadow: 0 0 12px var(--color-primary), inset 0 0 8px var(--color-primary);
+      }
+      [data-theme="cyberpunk-glitch"] h1, [data-theme="cyberpunk-glitch"] h2 {
+        position: relative;
+        animation: glitch 1.5s steps(2, end) infinite;
+      }
+      [data-theme="cyberpunk-glitch"] h1::before, [data-theme="cyberpunk-glitch"] h2::before {
+        content: attr(data-text);
+        position: absolute;
+        left: -2px;
+        text-shadow: -1px 0 var(--color-secondary);
+        overflow: hidden;
+        top: 0;
+        animation: glitch-secondary 1.5s steps(2, end) infinite;
+        clip-path: rect(24px, 550px, 90px, 0);
+      }
+       [data-theme="cyberpunk-glitch"] .scanline-overlay {
+        background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, rgba(0,0,0,0) 60%), linear-gradient(var(--color-overlay) 1px, transparent 1px);
+        background-size: 100% 4px;
+      }
+      [data-theme="cyberpunk-glitch"] .font-press-start { font-family: var(--font-heading); }
+
+      /* THEME: SOLARIZED-DAWN */
+      [data-theme="solarized-dawn"] .brutal-card-shadow,
+      [data-theme="solarized-dawn"] .brutal-button-shadow,
+      [data-theme="solarized-dawn"] .brutal-image-shadow {
+        display: none;
+      }
+      [data-theme="solarized-dawn"] .brutal-card .relative,
+      [data-theme="solarized-dawn"] .team-image-wrapper,
+      [data-theme="solarized-dawn"] .contact-form-wrapper,
+      [data-theme="solarized-dawn"] .theme-toggle-menu {
+        border-radius: 12px;
+        border: 1px solid #07364220;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+      [data-theme="solarized-dawn"] .brutal-card:hover .relative,
+      [data-theme="solarized-dawn"] .team-image-wrapper:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+      [data-theme="solarized-dawn"] .brutal-button,
+      [data-theme="solarized-dawn"] .theme-toggle-fab {
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+      [data-theme="solarized-dawn"] .brutal-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      [data-theme="solarized-dawn"] .font-press-start { font-family: var(--font-heading); font-weight: 700; letter-spacing: -0.05em; }
+      [data-theme="solarized-dawn"] .text-brand-primary { color: var(--color-primary) !important; }
+      [data-theme="solarized-dawn"] .text-brand-secondary { color: var(--color-secondary) !important; }
+
+      /* THEME: TERMINAL-MATRIX */
+      [data-theme="terminal-matrix"] #matrix-canvas {
+        display: block;
+      }
+      [data-theme="terminal-matrix"] .app-container {
+        background-color: rgba(0, 10, 0, 0.75) !important;
+        backdrop-filter: blur(1px);
+      }
+      [data-theme="terminal-matrix"] .brutal-card-shadow,
+      [data-theme="terminal-matrix"] .brutal-button-shadow,
+      [data-theme="terminal-matrix"] .brutal-image-shadow {
+        display: none;
+      }
+      [data-theme="terminal-matrix"] .brutal-card .relative,
+      [data-theme="terminal-matrix"] .brutal-button,
+      [data-theme="terminal-matrix"] .contact-form-wrapper,
+      [data-theme="terminal-matrix"] .team-image-wrapper,
+      [data-theme="terminal-matrix"] .theme-toggle-fab,
+      [data-theme="terminal-matrix"] .theme-toggle-menu {
+        border: 1px solid var(--color-primary);
+        background: transparent !important;
+      }
+      [data-theme="terminal-matrix"] .brutal-card:hover .relative {
+        background: rgba(0, 255, 0, 0.05) !important;
+      }
+      [data-theme="terminal-matrix"] .brutal-button,
+      [data-theme="terminal-matrix"] .theme-toggle-fab {
+        background: var(--color-primary) !important;
+        color: var(--color-dark) !important;
+      }
+      [data-theme="terminal-matrix"] .brutal-button:hover,
+      [data-theme="terminal-matrix"] .theme-toggle-fab:hover {
+        background: var(--color-secondary) !important;
+      }
+      [data-theme="terminal-matrix"] .bg-brand-dark, 
+      [data-theme="terminal-matrix"] .bg-brand-dark\/80,
+      [data-theme="terminal-matrix"] .bg-brand-dark\/95 {
+        background-color: transparent !important;
+      }
+      [data-theme="terminal-matrix"] .backdrop-blur-sm {
+        backdrop-filter: none;
+      }
+      [data-theme="terminal-matrix"] input, [data-theme="terminal-matrix"] textarea {
+        background: transparent !important;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'press-start': ['var(--font-heading)', 'cursive'],
+              'vt323': ['var(--font-body)', 'monospace'],
+            },
+            colors: {
+              'brand-dark': 'var(--color-dark)',
+              'brand-light': 'var(--color-light)',
+              'brand-primary': 'var(--color-primary)',
+              'brand-secondary': 'var(--color-secondary)',
+            },
+            animation: {
+              blink: 'blink 1s step-end infinite',
+              'pulse-glow': 'pulse-glow 2s infinite',
+            },
+            keyframes: {
+              blink: {
+                'from, to': { color: 'transparent' },
+                '50%': { color: 'var(--color-primary)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
